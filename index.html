@@ -1506,7 +1506,57 @@ ${historyText}
                 historyList.appendChild(li);
             });
         }
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Проверяем при загрузке страницы, входил ли пользователь ранее
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const savedUser = localStorage.getItem('username');
 
+    if (isLoggedIn === 'true' && savedUser) {
+        // Вызываем функцию, которая активирует личный кабинет на сайте
+        handleSuccessfulLogin(savedUser);
+    }
+});
+
+// 2. Функция, которую нужно вызывать вместо обычной авторизации, когда юзер вводит верный логин
+function loginUser(username) {
+    // Сохраняем состояние в память браузера
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('username', username);
+    
+    // Запускаем отображение личного кабинета
+    handleSuccessfulLogin(username);
+}
+
+// 3. Функция, которая переключает интерфейс сайта в режим "Вошёл в аккаунт"
+function handleSuccessfulLogin(username) {
+    const authBlock = document.getElementById('auth-block');
+    const trackerBlock = document.getElementById('tracker-block');
+    const adminBlock = document.getElementById('admin-block');
+
+    if (authBlock) {
+        authBlock.innerHTML = `
+            <span class="user-greeting">Привет, ${username}!</span>
+            <a href="#" onclick="logoutUser()">Выйти</a>
+        `;
+    }
+    
+    // Показываем скрытые блоки дневника ухода и админки
+    if (trackerBlock) trackerBlock.style.display = 'block';
+    // Если зашел админ (например, Katya), показываем админку
+    if (adminBlock && (username.toLowerCase() === 'katya' || username.toLowerCase() === 'админ')) {
+        adminBlock.style.display = 'block';
+    }
+}
+
+// 4. Функция для выхода из аккаунта (при нажатии на кнопку "Выйти")
+function logoutUser() {
+    // Очищаем память браузера
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('username');
+    
+    // Перезагружаем страницу, чтобы сбросить состояние сайта
+    window.location.reload();
+}
     </script>
 </body>
 </html>
