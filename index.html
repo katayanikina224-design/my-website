@@ -1,0 +1,1512 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Цветочный Гид — Премиум Энциклопедия растений</title>
+    <!-- Библиотека html2pdf для генерации PDF памяток прямо на клиенте -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Стили для интерактивного календарика ухода */
+        .calendar-block {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px dashed #2d5a27;
+        }
+
+            .calendar-block h3 {
+                color: #2d5a27;
+                font-size: 1.2rem;
+                margin-bottom: 10px;
+            }
+
+        body.dark-theme .calendar-block h3 {
+            color: #8dcb6a;
+        }
+
+        .calendar-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+            .calendar-controls input[type="date"] {
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 1rem;
+                flex-grow: 1;
+            }
+
+        body.dark-theme .calendar-controls input[type="date"] {
+            background: #2d2d2d;
+            color: white;
+            border-color: #444;
+        }
+
+        .calendar-btn {
+            background: #2d5a27;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+            .calendar-btn:hover {
+                background: #1e3d1a;
+            }
+
+        .history-list {
+            list-style: none;
+            max-height: 120px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        body.dark-theme .history-list {
+            background: #252525;
+        }
+
+        .history-list li {
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        body.dark-theme .history-list li {
+            border-bottom-color: #333;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #f4f6f4;
+            color: #333;
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+            /* Тёмная тема */
+            body.dark-theme {
+                background-color: #121212;
+                color: #e0e0e0;
+            }
+
+                body.dark-theme main .welcome-box,
+                body.dark-theme .plant-card,
+                body.dark-theme .modal-box,
+                body.dark-theme .info-box,
+                body.dark-theme .faq-item,
+                body.dark-theme .tracker-section {
+                    background-color: #1e1e1e;
+                    color: #e0e0e0;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+                }
+
+                    body.dark-theme .plant-info h3,
+                    body.dark-theme .faq-question h3,
+                    body.dark-theme .tracker-section h2 {
+                        color: #8dcb6a;
+                    }
+
+                body.dark-theme .form-group select,
+                body.dark-theme .admin-form input,
+                body.dark-theme .admin-form select,
+                body.dark-theme .tracker-form input {
+                    background-color: #2d2d2d;
+                    color: #fff;
+                    border-color: #444;
+                }
+
+                body.dark-theme .tab-item {
+                    background: #252525;
+                    border-left-color: #8dcb6a;
+                }
+
+                    body.dark-theme .tab-item strong {
+                        color: #8dcb6a;
+                    }
+
+        /* Шапка */
+        header {
+            background-color: #2d5a27;
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+            header h1 {
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+            }
+
+            header p {
+                font-size: 1.1rem;
+                opacity: 0.9;
+            }
+
+        /* Навигация */
+        nav {
+            background-color: #1e3d1a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-links {
+            display: flex;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 30px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+            nav a:hover {
+                color: #a8e6cf;
+            }
+
+        .auth-nav {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-greeting {
+            color: #a8e6cf;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: 2px solid white;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 15px;
+            transition: all 0.3s;
+        }
+
+            .theme-toggle-btn:hover {
+                background: white;
+                color: #2d5a27;
+            }
+
+        /* Главный контейнер */
+        main {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+            .welcome-box h2 {
+                color: #2d5a27;
+                margin-bottom: 10px;
+            }
+
+        /* Калькулятор */
+        .calculator-section {
+            background: #e8f5e9;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #c8e6c9;
+            margin-bottom: 40px;
+        }
+
+        body.dark-theme .calculator-section {
+            background: #1c2e1b;
+            border-color: #2d5a27;
+        }
+
+        .calculator-section h2 {
+            color: #2d5a27;
+            margin-bottom: 15px;
+        }
+
+        body.dark-theme .calculator-section h2 {
+            color: #8dcb6a;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+
+            .form-group select {
+                width: 100%;
+                padding: 12px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+                font-size: 1rem;
+                outline: none;
+            }
+
+        .calc-btn {
+            background-color: #2d5a27;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+            .calc-btn:hover {
+                background-color: #1e3d1a;
+            }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-left: 5px solid #2d5a27;
+            border-radius: 4px;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        body.dark-theme .result-box {
+            background: #252525;
+            border-left-color: #8dcb6a;
+        }
+
+        /* Сетка каталога */
+        .catalog-title {
+            color: #2d5a27;
+            margin-top: 20px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #2d5a27;
+            padding-bottom: 8px;
+        }
+
+        .plant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .plant-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+            .plant-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            }
+
+        .plant-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .plant-info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .plant-info h3 {
+                margin-bottom: 10px;
+                color: #1e3d1a;
+                font-size: 1.3rem;
+            }
+
+            .plant-info p {
+                color: #666;
+                font-size: 0.95rem;
+                flex-grow: 1;
+            }
+
+        body.dark-theme .plant-info p {
+            color: #bbb;
+        }
+
+        .tag {
+            align-self: flex-start;
+            background: #e8f5e9;
+            color: #2d5a27;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        body.dark-theme .tag {
+            background: #253824;
+            color: #8dcb6a;
+        }
+
+        /* Панель администратора */
+        .admin-panel {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+            border: 2px dashed #2d5a27;
+            display: none;
+        }
+
+            .admin-panel h2 {
+                color: #2d5a27;
+                margin-bottom: 15px;
+                font-size: 1.4rem;
+            }
+
+        .admin-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+            .admin-form input, .admin-form select {
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 0.95rem;
+                width: 100%;
+            }
+
+            .admin-form button {
+                background: #2d5a27;
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 4px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+
+        /* Трекер ухода */
+        .tracker-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+            display: none;
+        }
+
+        .tracker-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+            .tracker-form input {
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                flex-grow: 1;
+            }
+
+            .tracker-form button {
+                padding: 10px 20px;
+                background: #2d5a27;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: bold;
+            }
+
+        .tracker-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .tracker-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            position: relative;
+        }
+
+        body.dark-theme .tracker-item {
+            background: #252525;
+            border-color: #333;
+        }
+
+        .tracker-item button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background: #8dcb6a;
+            color: #1e3d1a;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Окна модальные */
+        .modal-overlay, .info-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+            .modal-overlay.active, .info-modal.active {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+        .modal-box, .info-box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .info-box {
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 0;
+            border-radius: 12px;
+        }
+
+            .info-box img {
+                width: 100%;
+                height: 280px;
+                object-fit: cover;
+            }
+
+        .info-content {
+            padding: 25px;
+        }
+
+        .info-tabs {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .tab-item {
+            background: #f4f6f4;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #2d5a27;
+        }
+
+            .tab-item strong {
+                display: block;
+                color: #1e3d1a;
+                font-size: 0.9rem;
+            }
+
+        .pdf-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+            .pdf-btn:hover {
+                background: #c0392b;
+            }
+
+        .modal-box h2, .info-content h2 {
+            color: #2d5a27;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #666;
+            z-index: 10;
+        }
+
+        .info-box .close-btn {
+            color: white;
+            top: 15px;
+            right: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal-box button {
+            width: 100%;
+            padding: 12px;
+            background: #2d5a27;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Индикатор пароля */
+        .password-strength {
+            height: 5px;
+            width: 100%;
+            background: #eee;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s;
+        }
+
+        .strength-text {
+            font-size: 0.8rem;
+            margin-top: -12px;
+            margin-bottom: 15px;
+            display: block;
+            font-weight: bold;
+        }
+
+        /* Тосты */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast-item {
+            background: #2d5a27;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 6px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+            .toast-item.active {
+                transform: translateX(0);
+            }
+
+        /* Лайки */
+        .like-btn {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            margin-top: 10px;
+            align-self: flex-start;
+            transition: transform 0.2s ease, color 0.2s ease;
+            outline: none;
+        }
+
+        /* FAQ */
+        .faq-section {
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+
+        .faq-item {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(45, 90, 39, 0.03);
+        }
+
+            .faq-question h3 {
+                font-size: 1.1rem;
+                color: #2d5a27;
+            }
+
+        .faq-answer {
+            max-height: 0;
+            padding: 0 20px;
+            overflow: hidden;
+            transition: all 0.3s ease-out;
+            color: #666;
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 15px 20px 20px 20px;
+            max-height: 200px;
+            border-top: 1px solid #eee;
+        }
+
+        footer {
+            background-color: #1e3d1a;
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+            margin-top: 60px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌸 Цветочный Гид</h1>
+        <p>Искусство правильного ухода за комнатными растениями</p>
+    </header>
+
+    <nav>
+        <div class="nav-links">
+            <a href="#about">Главная</a>
+            <a href="#calc">Калькулятор</a>
+            <a href="#catalog">Каталог цветов</a>
+        </div>
+        <div class="auth-nav" id="auth-block">
+            <a href="#" onclick="openModal('login-modal')">Войти</a>
+        </div>
+        <button class="theme-toggle-btn" onclick="toggleTheme()">🌓 Тема</button>
+    </nav>
+
+    <main>
+        <section id="about" class="welcome-box">
+            <h2>Добро пожаловать!</h2>
+            <p>Перед вами масштабный интерактивный справочник домашних растений. Регистрируйтесь, создавайте личный дневник ухода, рассчитывайте полив и скачивайте PDF-карты!</p>
+        </section>
+
+        <!-- Калькулятор -->
+        <section id="calc" class="calculator-section">
+            <h2>🧮 Интерактивный калькулятор полива</h2>
+            <div class="form-group">
+                <label for="plant-type">Тип растения:</label>
+                <select id="plant-type">
+                    <option value="succulent">Суккуленты и Кактусы</option>
+                    <option value="decorative-leaf">Декоративно-лиственные крупные</option>
+                    <option value="flowering-standard">Цветущие классические</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="season">Текущий сезон:</label>
+                <select id="season">
+                    <option value="summer">Весна / Лето</option>
+                    <option value="winter">Осень / Зима</option>
+                </select>
+            </div>
+            <button class="calc-btn" onclick="calculateWatering()">Рассчитать частоту полива</button>
+            <div id="calc-result" class="result-box">
+                <strong>Рекомендация:</strong> <span id="result-text"></span>
+            </div>
+        </section>
+
+        <!-- Личный кабинет: Трекер здоровья растений -->
+        <section id="tracker-block" class="tracker-section">
+            <h2>📅 Ваш личный дневник ухода за растениями</h2>
+            <p style="margin-bottom: 15px; color:#666;">Добавьте свои домашние цветы, чтобы вовремя отмечать полив:</p>
+            <div class="tracker-form">
+                <input type="text" id="tracker-plant-name" placeholder="Название вашего цветка (например: Мой любимый фикус)...">
+                <button onclick="addTrackerPlant()">Добавить в дневник</button>
+            </div>
+            <div class="tracker-list" id="tracker-container"></div>
+        </section>
+
+        <!-- Панель администратора -->
+        <section id="admin-block" class="admin-panel">
+            <h2>➕ Добавить новое растение в глобальный каталог</h2>
+            <div class="admin-form">
+                <div>
+                    <label>Название цветка:</label>
+                    <input type="text" id="new-plant-title" placeholder="Фикус Каучуконосный">
+                </div>
+                <div>
+                    <label>Категория:</label>
+                    <select id="new-plant-tag">
+                        <option value="Суккуленты">Суккуленты</option>
+                        <option value="Декоративно-лиственные">Декоративно-лиственные</option>
+                        <option value="Цветущие">Цветущие</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Ссылка на фото:</label>
+                    <input type="text" id="new-plant-img" value="https://images.unsplash.com/photo-1545241047-6083a3684587?w=400">
+                </div>
+                <div>
+                    <label>Описание:</label>
+                    <input type="text" id="new-plant-desc" placeholder="Секреты содержания...">
+                </div>
+                <button onclick="addNewPlant()">Добавить на сайт</button>
+            </div>
+        </section>
+
+        <h2 id="catalog" class="catalog-title">🌿 Большая энциклопедия растений</h2>
+
+        <!-- Фильтры -->
+        <div class="filter-container" style="margin-bottom: 25px; display: flex; flex-wrap: wrap; gap: 15px;">
+            <input type="text" id="plant-search" placeholder="🔍 Живой поиск по названию..." oninput="filterPlants()" style="padding: 12px; border: 1px solid #ccc; border-radius: 6px; flex-grow: 1; outline: none;">
+            <div class="filter-buttons" style="display: flex; gap: 8px;">
+                <button class="filter-btn active" onclick="filterCategory('Все', this)" style="padding: 10px 15px; background: #2d5a27; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Все</button>
+                <button class="filter-btn" onclick="filterCategory('Суккуленты', this)" style="padding: 10px 15px; background: #e8f5e9; color: #2d5a27; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Суккуленты</button>
+                <button class="filter-btn" onclick="filterCategory('Декоративно-лиственные', this)" style="padding: 10px 15px; background: #e8f5e9; color: #2d5a27; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Декоративно-лиственные</button>
+                <button class="filter-btn" onclick="filterCategory('Цветущие', this)" style="padding: 10px 15px; background: #e8f5e9; color: #2d5a27; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Цветущие</button>
+            </div>
+        </div>
+
+        <section class="plant-grid" id="plant-container">
+            <!-- 1. Суккуленты -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://basket-17.wbbasket.ru/vol2686/part268662/268662540/images/big/1.webp" alt="Эчеверия" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Суккуленты</span>
+                    <h3>Эчеверия (Каменная роза)</h3>
+                    <p>Идеальный миниатюрный цветок для солнечных подоконников. Накапливает воду в толстых декоративных листьях и не боится сухого воздуха.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 2. Декоративно-лиственные -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/get-mpic/16125524/2a000001978cbae4a096ecf0babe3c79fac0/orig" alt="Замиокулькас" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Декоративно-лиственные</span>
+                    <h3>Замиокулькас</h3>
+                    <p>Выносливый зеленый гигант с глянцевыми плотными листьями. Прекрасно мирится с искусственным светом офисов и редким поливом.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 3. Цветущие -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://big-pictures-tropichouse.storage.yandexcloud.net/iblock/5db/5db2b1d555930a36f4fc3d697367eb76/ceeae83b4839af42733a194a2620bab9.jpg" alt="Спатифиллум" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Цветущие</span>
+                    <h3>Спатифиллум</h3>
+                    <p>Народное название — «Женское счастье». Выпускает красивые белые паруса-соцветия, очищает воздух и обожает влажную среду.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 4. Орхидеи -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=69a7a4e9f64174abdeff842a2a5ddb7c_l-5889061-images-thumbs&n=13" alt="Орхидея Фаленопсис" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Орхидеи</span>
+                    <h3>Орхидея Фаленопсис</h3>
+                    <p>Тропический эпифит. Растет не в земле, а в специальной древесной коре. Радует каскадным ярким цветением по несколько месяцев.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 5. Папоротники -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=146189e8558bcbb55fe78f059403686c_l-5220949-images-thumbs&n=13" alt="Нефролепис" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Папоротники</span>
+                    <h3>Папоротник Нефролепис</h3>
+                    <p>Обладает пышной раскидистой ажурной листвой. Требует постоянного притока свежего воздуха, тени и высокой влажности грунта.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 6. Цитрусовые -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/get-mpic/17702474/2a0000019c6be83ff4c25d45dc85b82fb7d0/orig" alt="Домашний Лимон" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Цитрусовые</span>
+                    <h3>Домашний Лимон</h3>
+                    <p>Небольшое ароматное дерево. При правильном световом и температурном режиме способно цвести и плодоносить прямо в квартире.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 7. Луковичные -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://cdn2.botanichka.ru/wp-content/uploads/2024/11/pochemu-vse-putayut-amarillis-i-gippeastrum-i-kak-ih-otlichit-6.jpg" alt="Гиппеаструм" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Луковичные</span>
+                    <h3>Гиппеаструм (Амариллис)</h3>
+                    <p>Поражает огромными яркими цветами-граммофонами на мощной стрелке. Имеет четко выраженный зимний период полного «сна».</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 8. Ампельные -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=d69207418d3f94e8763b8aa8764ebb0c533b9251-5252146-images-thumbs&n=13" alt="Сциндапсус" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Ампельные / Лианы</span>
+                    <h3>Сциндапсус Золотистый</h3>
+                    <p>Быстрорастущая гибкая лиана с красивыми пестрыми листьями. Отлично подходит для вертикального озеленения комнат.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 9. Насекомоядные -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=1be4d5a75f75a5cbde7769f240af58d4_l-5256019-images-thumbs&n=13" alt="Венерина мухоловка" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Хищные</span>
+                    <h3>Венерина мухоловка</h3>
+                    <p>Экзотическое болотное растение-хищник. Самостоятельно ловит мелких насекомых с помощью захлопывающихся листьев-ловушек.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 10. Декоративно-лиственные -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=13d815e861cdc454da037f309842e33d_l-9215608-images-thumbs&n=13" alt="Хлорофитум" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Декоративно-лиственные</span>
+                    <h3>Хлорофитум Хохлатый</h3>
+                    <p>Настоящий чемпион по очистке воздуха и выработке кислорода. Выпускает забавные стрелки с воздушными «усами»-детками.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 11. Цветущие -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=efc7a607c3f59483dfff366f95ac55f53e113b73-13608022-images-thumbs&n=13m" alt="Сенполия" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Цветущие</span>
+                    <h3>Сенполия (Фиалка)</h3>
+                    <p>Любимая многими комнатная классика с бархатистыми листьями. Цветет круглый год аккуратными разноцветными букетиками.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 12. Особый уход -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=f3a1f98db856964fcd713c88f96af86c4e8d7475-13084016-images-thumbs&n=13" alt="Калатея" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Особый уход</span>
+                    <h3>Калатея Молитвенная</h3>
+                    <p>Растение с невероятными узорами на листьях, которые поднимаются вверх на ночь. Очень капризно к качеству воды.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 13. Суккуленты -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=4cff7fea39c90ac8778d979780a79d760807e315-16337306-images-thumbs&n=13" alt="Крассула" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Суккуленты</span>
+                    <h3>Крассула (Денежное дерево)</h3>
+                    <p>Популярное древовидное суккулентное растение с толстыми мясистыми листьями. Символизирует достаток, крайне живуче.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 14. Декоративно-лиственные -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=001ab1caae67e408746340282d76f574f9a88af2-5300257-images-thumbs&n=13" alt="Монстера" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Декоративно-лиственные</span>
+                    <h3>Монстера Деликатесная</h3>
+                    <p>Огромная тропическая лиана с эффектными резными листьями. Требует много свободного места и прочную опору.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 15. Цветущие -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=6aedb43b3dc6af8d35abf51bc4d300a2034fbf25-5888651-images-thumbs&n=13" alt="Антуриум" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Цветущие</span>
+                    <h3>Антуриум (Мужское счастье)</h3>
+                    <p>Обладает эффектными глянцевыми восковыми цветами (чаще красными) и сердцевидными плотными листьями.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 16. Декоративно-лиственные -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=a50cbde83d4bcfd3724f10f505bdb56e222d27db-4497566-images-thumbs&n=13" alt="Драцена" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Декоративно-лиственные</span>
+                    <h3>Драцена Маргината</h3>
+                    <p>Внешне напоминает небольшую домашнюю пальму с пучком длинных узких листьев на одревесневшем стебле.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 17. Суккуленты -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=0668415bd0f1cbbe0e736b14ca7ae631e5b8b14a-5235582-images-thumbs&n=13" alt="Алоэ" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Суккуленты</span>
+                    <h3>Алоэ Вера</h3>
+                    <p>Лекарственный суккулент, известный своими целебными и успокаивающими свойствами сока. Не требует частого ухода.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 18. Суккуленты -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=c54fa39654f0bd106ea5873f01a13571e9858357-4983949-images-thumbs&n=13" alt="Сансевьерия" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Суккуленты</span>
+                    <h3>Сансевьерия (Тёщин язык)</h3>
+                    <p>Абсолютный лидер по выносливости. Выживает в полной тени, без полива месяцами и отлично очищает воздух.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+            <!-- 19. Декоративно-лиственные -->
+            <div class="plant-card" onclick="openPlantDetails(this)">
+                <img src="https://avatars.mds.yandex.net/i?id=4a6c319418aa47ea2b4078eb3c8adc18f1035d6c-8454246-images-thumbs&n=13" alt="Фикус" class="plant-image">
+                <div class="plant-info">
+                    <span class="tag">Декоративно-лиственные</span>
+                    <h3>Фикус Benchamina</h3>
+                    <p>Изящное комнатное деревце с мелкими листьями. Любит постоянное место и сбрасывает листву от стресса.</p>
+                    <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq-section">
+            <h2 class="catalog-title">❓ Часто задаваемые вопросы (FAQ)</h2>
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question"><h3>Как понять, что растение нужно полить?</h3><span>▼</span></div>
+                <div class="faq-answer"><p>Проверьте почву пальцем на 2-3 см. Если земля полностью сухая — пора поливать.</p></div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Модалки -->
+    <div class="modal-overlay" id="login-modal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeModal('login-modal')">&times;</span>
+            <h2>Вход в аккаунт</h2>
+            <input type="email" id="login-email" placeholder="Электронная почта" required>
+            <input type="password" id="login-password" placeholder="Пароль" required>
+            <button onclick="handleLogin()">Войти</button>
+            <p>Нет аккаунта? <a href="#" onclick="switchModal('login-modal', 'register-modal')">Регистрация</a></p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="register-modal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeModal('register-modal')">&times;</span>
+            <h2>Регистрация</h2>
+            <input type="text" id="reg-name" placeholder="Ваше имя" required>
+            <input type="email" id="reg-email" placeholder="Электронная почта" required>
+            <input type="password" id="reg-password" placeholder="Пароль" required>
+            <div class="password-strength"><div id="strength-bar" class="password-strength-bar"></div></div>
+            <span id="strength-text" class="strength-text" style="color: #999;">Сложность пароля</span>
+            <button onclick="handleRegister()">Создать аккаунт</button>
+        </div>
+    </div>
+
+    <!-- Исправленное окно подробной информации о растении -->
+    <div class="info-modal" id="plant-info-modal">
+        <div class="info-box">
+            <span class="close-btn" onclick="closeModal('plant-info-modal')">&times;</span>
+            <img id="modal-plant-img" src="" alt="">
+
+            <div class="info-content">
+                <!-- 1. Основная информация о растении -->
+                <span class="tag" id="modal-plant-tag"></span>
+                <h2 id="modal-plant-title"></h2>
+                <p id="modal-plant-desc" style="margin-bottom: 20px; color: #555;"></p>
+
+                <!-- 2. Сетка с вкладками ухода -->
+                <div class="info-tabs">
+                    <div class="tab-item">
+                        <strong>☀️ Освещение:</strong>
+                        <span id="modal-plant-light"></span>
+                    </div>
+                    <div class="tab-item">
+                        <strong>💧 Режим полива:</strong>
+                        <span id="modal-plant-water"></span>
+                    </div>
+                    <div class="tab-item">
+                        <strong>🌡️ Температура:</strong>
+                        <span id="modal-plant-temp"></span>
+                    </div>
+                    <div class="tab-item">
+                        <strong>🌱 Пересадка и грунт:</strong>
+                        <span id="modal-plant-soil"></span>
+                    </div>
+                </div>
+
+                <!-- 3. Интерактивный календарь полива -->
+                <div class="calendar-block">
+                    <h3>🗓️ Календарь ухода и полива</h3>
+                    <div class="calendar-controls">
+                        <input type="date" id="watering-date">
+                        <button class="calendar-btn" onclick="addWateringLog()">Отметить полив</button>
+                    </div>
+                    <p style="font-weight: bold; font-size: 0.85rem; margin-bottom: 5px;">История поливов растения:</p>
+                    <ul id="watering-history" class="history-list">
+                        <!-- Сюда JS будет добавлять даты -->
+                    </ul>
+                </div>
+
+                <!-- 4. Кнопка скачивания памятки -->
+                <button onclick="downloadPlantMemo()" style="margin-top: 20px; width: 100%; padding: 12px; background: #2d5a27; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">📥 Скачать текстовую памятку</button>
+            </div> <!-- Конец info-content -->
+
+        </div> <!-- Конец info-box -->
+    </div> <!-- Конец info-modal -->
+
+
+    <footer>
+        <p>© 2026 Разработано для зачёта по WEB-разработке (Группа Исип-41)</p>
+    </footer>
+
+    <script>
+        const plantDatabase = {
+            "Эчеверия (Каменная роза)": {
+                light: "Яркий прямой солнечный свет, южные подоконники.",
+                water: "Редкий, после полного высыхания почвы. Раз в 2 недели.",
+                temp: "Летом до +28°C, зимой прохлада (+10...+12°C).",
+                soil: "Легкий песчаный грунт для суккулентов."
+            },
+            "Замиокулькас": {
+                light: "Яркий рассеянный свет или полутень.",
+                water: "Умеренный. Между поливами почва должна просыхать полностью.",
+                temp: "Теплолюбивое растение, +22...+26°C.",
+                soil: "Рыхлый грунт с песком и древесным углям."
+            },
+            "Спатифиллум": {
+                light: "Рассеянный свет, легкая полутень.",
+                water: "Обильный летом, почва должна быть всегда слегка влажной.",
+                temp: "Оптимально +20...+23°C.",
+                soil: "Смесь листовой земли, торфа и песка."
+            }
+        };
+
+        function showToast(message, icon = "🌿") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-item';
+            toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('active'), 50);
+            setTimeout(() => {
+                toast.classList.remove('active');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function switchModal(closeId, openId) { closeModal(closeId); setTimeout(() => openModal(openId), 200); }
+
+        function handleRegister() {
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            if (!name || !email || !password) { showToast("Заполните все поля!", "⚠️"); return; }
+            localStorage.setItem(email, JSON.stringify({ name, email, password }));
+            showToast("Регистрация успешна!", "🎉");
+            switchModal('register-modal', 'login-modal');
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            const storedUser = localStorage.getItem(email);
+            if (!storedUser) { showToast("Пользователь не найден!", "❌"); return; }
+            const userData = JSON.parse(storedUser);
+            if (userData.password !== password) { showToast("Неверный пароль!", "🔒"); return; }
+            showToast(`Добро пожаловать, ${userData.name}!`, "👋");
+            closeModal('login-modal');
+            updateAuthMenu(userData.name);
+        }
+
+        function updateAuthMenu(name) {
+            document.getElementById('auth-block').innerHTML = `
+                        <span class="user-greeting">🌿 Привет, ${name}!</span>
+                        <a href="#" onclick="handleLogout()" style="color: #ff8a8a; font-weight:bold; text-decoration:none;">Выйти</a>
+                    `;
+            document.getElementById('admin-block').style.display = 'block';
+            document.getElementById('tracker-block').style.display = 'block';
+            loadTrackerPlants();
+        }
+
+        function handleLogout() {
+            showToast("Вы успешно вышли из системы.", "🚪");
+            document.getElementById('auth-block').innerHTML = `<a href="#" onclick="openModal('login-modal')" style="color:white; font-weight:bold; text-decoration:none;">Войти</a>`;
+            document.getElementById('admin-block').style.display = 'none';
+            document.getElementById('tracker-block').style.display = 'none';
+        }
+
+        // Логика личного дневника трекера
+        function addTrackerPlant() {
+            const nameInput = document.getElementById('tracker-plant-name');
+            const name = nameInput.value.trim();
+            if (!name) { showToast("Введите имя комнатного цветка!", "⚠️"); return; }
+            let plants = JSON.parse(localStorage.getItem('trackerPlants')) || [];
+            plants.push({ name: name, lastWatered: 'Не поливался' });
+            localStorage.setItem('trackerPlants', JSON.stringify(plants));
+            nameInput.value = '';
+            loadTrackerPlants();
+            showToast("Цветок добавлен в ваш дневник ухода!", "📅");
+        }
+
+        function loadTrackerPlants() {
+            const container = document.getElementById('tracker-container');
+            container.innerHTML = '';
+            let plants = JSON.parse(localStorage.getItem('trackerPlants')) || [];
+            plants.forEach((plant, index) => {
+                container.innerHTML += `
+                            <div class="tracker-item">
+                                <strong>${plant.name}</strong>
+                                <p style="font-size:0.85rem; margin-top:5px; color:#666;">Последний полив: ${plant.lastWatered}</p>
+                                <button onclick="waterTrackerPlant(${index})">💧 Отметить полив</button>
+                            </div>
+                        `;
+            });
+        }
+
+        function waterTrackerPlant(index) {
+            let plants = JSON.parse(localStorage.getItem('trackerPlants')) || [];
+            const now = new Date();
+            plants[index].lastWatered = now.toLocaleString('ru-RU');
+            localStorage.setItem('trackerPlants', JSON.stringify(plants));
+            loadTrackerPlants();
+            showToast("Полив успешно зафиксирован в памяти!", "💧");
+        }
+
+        // Функция скачивания PDF
+        function downloadPlantPDF() {
+            const element = document.getElementById('pdf-content-area');
+            const title = document.getElementById('modal-plant-title').innerText;
+            const opt = {
+                margin: 10,
+                filename: `Инструкция_${title}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+            showToast("PDF-памятка успешно генерируется и скачивается!", "📥");
+        }
+
+        function addNewPlant() {
+            const title = document.getElementById('new-plant-title').value.trim();
+            const tag = document.getElementById('new-plant-tag').value;
+            const img = document.getElementById('new-plant-img').value.trim();
+            const desc = document.getElementById('new-plant-desc').value.trim();
+            if (!title || !desc) { showToast("Заполните название и описание!", "⚠️"); return; }
+            renderSinglePlant({ title, tag, img, desc });
+            showToast(`Растение "${title}" добавлено в каталог!`, "➕");
+        }
+
+        function renderSinglePlant(plant) {
+            const container = document.getElementById('plant-container');
+            container.insertAdjacentHTML('afterbegin', `
+                        <div class="plant-card" onclick="openPlantDetails(this)">
+                            <img src="${plant.img}" alt="${plant.title}" class="plant-image">
+                            <div class="plant-info">
+                                <span class="tag">${plant.tag}</span>
+                                <h3>${plant.title}</h3>
+                                <p>${plant.desc}</p>
+                                <button class="like-btn" onclick="toggleLike(event, this)">🤍</button>
+                            </div>
+                        </div>
+                    `);
+        }
+
+        function openPlantDetails(cardElement) {
+            const title = cardElement.querySelector('h3').innerText;
+            const tag = cardElement.querySelector('.tag').innerText;
+            const img = cardElement.querySelector('.plant-image').src;
+            const desc = cardElement.querySelector('p').innerText;
+            const details = plantDatabase[title] || {
+                light: "Яркий рассеянный свет.", water: "По мере просыхания почвы.", temp: "+20...+24°C.", soil: "Универсальный грунт."
+            };
+            document.getElementById('modal-plant-img').src = img;
+            document.getElementById('modal-plant-tag').innerText = tag;
+            document.getElementById('modal-plant-title').innerText = title;
+            document.getElementById('modal-plant-desc').innerText = desc;
+            document.getElementById('modal-plant-light').innerText = details.light;
+            document.getElementById('modal-plant-water').innerText = details.water;
+            document.getElementById('modal-plant-temp').innerText = details.temp;
+            document.getElementById('modal-plant-soil').innerText = details.soil;
+            openModal('plant-info-modal');
+        }
+
+        document.getElementById('reg-password').addEventListener('input', function () {
+            const password = this.value;
+            const bar = document.getElementById('strength-bar');
+            const text = document.getElementById('strength-text');
+            let score = 0;
+            if (password.length >= 6) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[A-Z]/.test(password) || /[a-z]/.test(password)) score++;
+            if (password.length === 0) { bar.style.width = '0'; text.innerText = 'Сложность'; }
+            else if (score === 1) { bar.style.width = '33%'; bar.style.background = '#e74c3c'; text.innerText = 'Слабый ❌'; }
+            else if (score === 2) { bar.style.width = '66%'; bar.style.background = '#f1c40f'; text.innerText = 'Средний ⚠️'; }
+            else if (score === 3) { bar.style.width = '100%'; bar.style.background = '#2ecc71'; text.innerText = 'Отличный! 🔥'; }
+        });
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+        }
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-theme');
+
+        function toggleFaq(element) { element.classList.toggle('active'); }
+
+        let currentCategory = 'Все';
+        function filterPlants() {
+            const searchQuery = document.getElementById('plant-search').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('#plant-container .plant-card');
+            cards.forEach(card => {
+                const title = card.querySelector('h3').innerText.toLowerCase();
+                if (title.includes(searchQuery)) card.style.display = 'flex';
+                else card.style.display = 'none';
+            });
+        }
+        function filterCategory(category, buttonElement) {
+            currentCategory = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.style.background = '#e8f5e9'; btn.style.color = '#2d5a27';
+            });
+            buttonElement.style.background = '#2d5a27'; buttonElement.style.color = 'white';
+            filterPlants();
+        }
+
+        function toggleLike(event, button) {
+            event.stopPropagation();
+            if (button.innerText === '🤍') {
+                button.innerText = '❤️'; button.style.color = '#e74c3c';
+                button.style.transform = 'scale(1.3)'; setTimeout(() => button.style.transform = 'scale(1)', 200);
+            } else { button.innerText = '🤍'; button.style.color = ''; }
+        }
+
+        function calculateWatering() {
+            const type = document.getElementById('plant-type').value;
+            const season = document.getElementById('season').value;
+            let advice = type === 'succulent' ? (season === 'summer' ? "Раз в 1.5 недели." : "Раз в месяц.") : "2 раза в неделю.";
+            document.getElementById('result-text').innerText = advice;
+            document.getElementById('calc-result').style.display = 'block';
+        }
+        // Функция генерации памятки с вшитой историей поливов из календаря
+        function downloadPlantMemo() {
+            // Собираем основные данные из открытого модального окна
+            const title = document.getElementById('modal-plant-title').innerText;
+            const tag = document.getElementById('modal-plant-tag').innerText;
+            const desc = document.getElementById('modal-plant-desc').innerText;
+
+            const light = document.getElementById('modal-plant-light').innerText;
+            const water = document.getElementById('modal-plant-water').innerText;
+            const temp = document.getElementById('modal-plant-temp').innerText;
+            const soil = document.getElementById('modal-plant-soil').innerText;
+
+            // Достаем историю поливов для этого цветка из localStorage
+            const storageKey = `watering_history_${title}`;
+            const history = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+            let historyText = "";
+
+            // Формируем текстовый блок для истории поливов
+            if (history.length === 0) {
+                historyText = "Отметок о поливе в календаре пока нет.";
+            } else {
+                history.forEach((dateString, index) => {
+                    const dateObj = new Date(dateString);
+                    const formattedDate = dateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+                    historyText += `${index + 1}. Полив зафиксирован: ${formattedDate}\n`;
+                });
+            }
+
+            // Собираем финальный текст памятки
+            const memoText = `=========================================
+🌿 ПАМЯТКА ПО УХОДУ: ${title.toUpperCase()}
+Категория: ${tag}
+=========================================
+
+📋 ОПИСАНИЕ:
+${desc}
+
+☀️ ОСВЕЩЕНИЕ:
+${light}
+
+💧 РЕЖИМ ПОЛИВА:
+${water}
+
+🌡️ ТЕМПЕРАТУРА:
+${temp}
+
+🌱 ПЕРЕСАДКА И ГРУНТ:
+${soil}
+
+=========================================
+🗓️ ЖУРНАЛ ПОЛИВОВ (ИЗ ВАШЕГО КАЛЕНДАРЯ):
+${historyText}
+=========================================
+Сгенерировано сайтом "Цветочный Гид" © 2026
+=========================================`;
+
+            // Создаем файл в памяти и запускаем скачивание
+            const blob = new Blob([memoText], { type: "text/plain;charset=utf-8" });
+            const link = document.createElement("a");
+
+            link.download = `Памятка_${title.replace(/\s+/g, '_')}.txt`;
+            link.href = URL.createObjectURL(blob);
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            if (typeof showToast === "function") {
+                showToast("Памятка с историей поливов скачана!", "📥");
+            }
+        }
+
+        // Функция добавления новой отметки о поливе в календарь
+        function addWateringLog() {
+            const title = document.getElementById('modal-plant-title').innerText;
+            const dateInput = document.getElementById('watering-date').value;
+
+            if (!dateInput) {
+                showToast("Пожалуйста, выберите дату в календаре!", "⚠️");
+                return;
+            }
+
+            // Формируем уникальный ключ для хранения истории именно этого цветка
+            const storageKey = `watering_history_${title}`;
+            let history = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+            // Проверяем, чтобы дата не дублировалась
+            if (history.includes(dateInput)) {
+                showToast("Этот день уже отмечен в графике!", "⚠️");
+                return;
+            }
+
+            // Добавляем дату, сортируем по убыванию (свежие сверху) и сохраняем
+            history.push(dateInput);
+            history.sort((a, b) => new Date(b) - new Date(a));
+            localStorage.setItem(storageKey, JSON.stringify(history));
+
+            // Обновляем список на экране и выводим красивый тост
+            updateWateringHistoryView(title);
+            showToast("Полив успешно зафиксирован в календаре!", "💧");
+        }
+
+        // Функция обновления видимого списка дат истории полива
+        function updateWateringHistoryView(plantTitle) {
+            const storageKey = `watering_history_${plantTitle}`;
+            const history = JSON.parse(localStorage.getItem(storageKey)) || [];
+            const historyList = document.getElementById('watering-history');
+
+            historyList.innerHTML = ""; // Очищаем старый список
+
+            if (history.length === 0) {
+                historyList.innerHTML = `<li style="color: #999; justify-content: center;">Истории поливов пока нет</li>`;
+                return;
+            }
+
+            // Выводим каждую дату в красивом формате
+            history.forEach((dateString) => {
+                const dateObj = new Date(dateString);
+                const formattedDate = dateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                const li = document.createElement('li');
+                li.innerHTML = `<span>💧 Полит: ${formattedDate}</span> <span style="color: #2d5a27; font-weight:bold;">✓</span>`;
+                historyList.appendChild(li);
+            });
+        }
+
+    </script>
+</body>
+</html>
