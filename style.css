@@ -28,3 +28,18 @@ footer {
     color: #777;
     font-size: 0.9rem;
 }
+@media (max-width: 768px) {
+    /* Здесь пишутся правила для телефонов */
+    body {
+        font-size: 16px; /* делаем текст читаемым */
+    }
+    .container, main, header { 
+        width: 100%; /* растягиваем основные блоки на весь экран телефона */
+        padding: 10px; 
+        flex-direction: column; /* если использовался flexbox, блоки встанут друг под друга */
+    }
+    img {
+        max-width: 100%; /* чтобы картинки не вылезали за экран */
+        height: auto;
+    }
+}
