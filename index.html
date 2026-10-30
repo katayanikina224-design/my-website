@@ -811,14 +811,14 @@
                     <label>Название цветка:</label>
                     <input type="text" id="new-plant-title" placeholder="Фикус Каучуконосный">
                 </div>
-                <div>
-                    <label>Категория:</label>
-                    <select id="new-plant-tag">
-                        <option value="Суккуленты">Суккуленты</option>
-                        <option value="Декоративно-лиственные">Декоративно-лиственные</option>
-                        <option value="Цветущие">Цветущие</option>
-                    </select>
-                </div>
+<div class="filter-buttons">
+    <!-- Для кнопки "Все" задаем значение "Все" -->
+    <button class="filter-btn active" data-filter="Все">Все</button>
+    <button class="filter-btn" data-filter="Суккуленты">Суккуленты</button>
+    <button class="filter-btn" data-filter="Декоративно-лиственные">Декоративно-лиственные</button>
+    <button class="filter-btn" data-filter="Цветущие">Цветущие</button>
+</div>
+
                 <div>
                     <label>Ссылка на фото:</label>
                     <input type="text" id="new-plant-img" value="https://images.unsplash.com/photo-1545241047-6083a3684587?w=400">
